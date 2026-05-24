@@ -35,14 +35,14 @@ function init() {
 
             const title = document.createElement("div");
             title.className = "set-title";
-            title.textContent = \`🎟 \${i}번 세트\`;
+            title.textContent = `🎟 ${i}번 세트`;
 
             const numbersDiv = document.createElement("div");
             numbersDiv.className = "numbers";
 
             set.forEach(num => {
                 const ball = document.createElement("div");
-                ball.className = \`ball \${getColorClass(num)}\`;
+                ball.className = `ball ${getColorClass(num)}`;
                 ball.textContent = num;
                 numbersDiv.appendChild(ball);
             });
