@@ -1,105 +1,65 @@
-// Custom Element for Lotto Ball
-class LottoBall extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
-    }
-
-    static get observedAttributes() {
-        return ['number'];
-    }
-
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (name === 'number' && oldValue !== newValue) {
-            this.render();
-        }
-    }
-
-    connectedCallback() {
-        this.render();
-    }
-
-    getColor(number) {
-        const num = parseInt(number);
-        if (num <= 10) return '#fbc400'; // Yellow
-        if (num <= 20) return '#69c8f2'; // Blue
-        if (num <= 30) return '#ff7272'; // Red
-        if (num <= 40) return '#aaa';    // Grey
-        return '#b0d840';                // Green
-    }
-
-    render() {
-        const number = this.getAttribute('number');
-        if (!number) return;
-
-        this.shadowRoot.innerHTML = \`
-            <style>
-                .ball {
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    font-weight: bold;
-                    font-size: 1.2rem;
-                    background-color: \${this.getColor(number)};
-                    color: #fff;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                    margin: 5px;
-                }
-            </style>
-            <div class="ball">\${number}</div>
-        \`;
-    }
-}
-
-// Register Custom Element
-if (!customElements.get('lotto-ball')) {
-    customElements.define('lotto-ball', LottoBall);
-}
-
-// Initialize Application
 function init() {
     const generateBtn = document.getElementById('generate-btn');
     const themeBtn = document.getElementById('theme-btn');
-    const numbersContainer = document.getElementById('numbers-container');
+    const resultContainer = document.getElementById('result');
     const root = document.documentElement;
 
-    if (!generateBtn || !themeBtn || !numbersContainer) {
-        console.error('Required elements not found');
-        return;
-    }
+    if (!generateBtn || !themeBtn || !resultContainer) return;
 
     // Lotto Logic
-    function generateLottoNumbers() {
-        const numbers = new Set();
-        while (numbers.size < 6) {
-            const randomNumber = Math.floor(Math.random() * 45) + 1;
-            numbers.add(randomNumber);
+    function generateOneSet() {
+        const numbers = [];
+        while (numbers.length < 6) {
+            const random = Math.floor(Math.random() * 45) + 1;
+            if (!numbers.includes(random)) {
+                numbers.push(random);
+            }
         }
-        return Array.from(numbers).sort((a, b) => a - b);
+        return numbers.sort((a, b) => a - b);
     }
 
-    function displayNumbers(numbers) {
-        numbersContainer.innerHTML = '';
-        numbers.forEach(number => {
-            const lottoBall = document.createElement('lotto-ball');
-            lottoBall.setAttribute('number', number);
-            numbersContainer.appendChild(lottoBall);
-        });
+    function getColorClass(num) {
+        if (num <= 10) return "yellow";
+        if (num <= 20) return "blue";
+        if (num <= 30) return "red";
+        if (num <= 40) return "gray";
+        return "green";
     }
 
-    generateBtn.addEventListener('click', () => {
-        const lottoNumbers = generateLottoNumbers();
-        displayNumbers(lottoNumbers);
-    });
+    function generateLottoSets() {
+        resultContainer.innerHTML = "";
+        for (let i = 1; i <= 5; i++) {
+            const set = generateOneSet();
+            const setDiv = document.createElement("div");
+            setDiv.className = "set";
+
+            const title = document.createElement("div");
+            title.className = "set-title";
+            title.textContent = \`🎟 \${i}번 세트\`;
+
+            const numbersDiv = document.createElement("div");
+            numbersDiv.className = "numbers";
+
+            set.forEach(num => {
+                const ball = document.createElement("div");
+                ball.className = \`ball \${getColorClass(num)}\`;
+                ball.textContent = num;
+                numbersDiv.appendChild(ball);
+            });
+
+            setDiv.appendChild(title);
+            setDiv.appendChild(numbersDiv);
+            resultContainer.appendChild(setDiv);
+        }
+    }
+
+    generateBtn.addEventListener('click', generateLottoSets);
 
     // Theme Logic
     function setTheme(theme) {
         root.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-        themeBtn.textContent = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        themeBtn.textContent = theme === 'dark' ? '☀️ 라이트 모드로 전환' : '🌙 다크 모드로 전환';
     }
 
     themeBtn.addEventListener('click', () => {
@@ -110,12 +70,11 @@ function init() {
     // Initial State
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
-
-    const initialNumbers = generateLottoNumbers();
-    displayNumbers(initialNumbers);
+    
+    // Initial generation
+    generateLottoSets();
 }
 
-// Run init when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
