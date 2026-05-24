@@ -60,3 +60,22 @@ generateBtn.addEventListener('click', () => {
 // Initial generation
 const initialNumbers = generateLottoNumbers();
 displayNumbers(initialNumbers);
+
+// Theme Toggle Logic
+const themeBtn = document.getElementById('theme-btn');
+const root = document.documentElement;
+
+// Check for saved theme preference
+const savedTheme = localStorage.getItem('theme') || 'light';
+setTheme(savedTheme);
+
+themeBtn.addEventListener('click', () => {
+    const currentTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    setTheme(currentTheme);
+});
+
+function setTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    themeBtn.textContent = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+}
